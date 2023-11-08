@@ -68,7 +68,7 @@ export default {
           title: title,
           i: 0,
         })
-        .then((response) = > {
+        .then((response) => {
           this.$router.push("/playback");
         })
         .catch((error) => {
