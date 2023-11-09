@@ -17,9 +17,19 @@
           "
           class="h-auto max-w-full rounded-lg cursor-pointer"
         />
-        <p>
-          {{ thumbnail[0].metadata.title }} - {{ thumbnail[0].metadata.user }}
-        </p>
+        <div class="flex flex-col justify-start w-full">
+          <div class="flex flex-row">
+            <div class="w-4/5">
+              <p class="text-white font-bold">
+                {{ thumbnail[0].metadata.title }} -
+                {{ thumbnail[0].metadata.user }}
+              </p>
+            </div>
+            <div class="w-1/5">
+              <p class="text-white">Views: {{ thumbnail[0]['views'] }}</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -57,7 +67,7 @@ export default {
   methods: {
     clickedVideo(id, user, title) {
       axios
-        .post("http://localhost:5000/api/set_videod", {
+        .post("/api/set_videod", {
           id: id,
           title: title,
           i: 0,
@@ -76,7 +86,7 @@ export default {
       for (let thumbnail of this.thumbnails) {
         axiosRequests.push(
           axios
-            .get("http://localhost:5000/api/views/" + thumbnail[0].metadata.id)
+            .get("/api/views/" + thumbnail[0].metadata.id)
             .then((response) => {
               thumbnail[0]["views"] = response.data.views;
             })
@@ -98,7 +108,7 @@ export default {
   },
   beforeMount() {
     axios
-      .get("http://localhost:5000/api/thumbnails")
+      .get("/api/thumbnails")
       .then((response) => {
         this.thumbnails = response.data.thumbnails;
         this.sortVids();
@@ -109,12 +119,12 @@ export default {
   },
   created() {
     axios
-      .get("http://localhost:5000/api/fetch_username")
+      .get("/api/fetch_username")
       .then((response) => {
         this.user = response.data.name;
         console.log("user: ", response.data.name);
         axios
-          .post("http://localhost:5000/api/get_token", {
+          .post("/api/get_token", {
             username: response.data.name,
           })
           .then((response) => {

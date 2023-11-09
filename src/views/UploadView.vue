@@ -1,7 +1,7 @@
 <template>
   <h1 style="display: flex; justify-content: center">Upload</h1>
   <div class="flex justify-center">
-    <div class="flex items-center justify-center w-96">
+    <div class="flex flex-row items-start w-2/5">
       <label
         for="dropzone-file"
         @dragover.prevent
@@ -116,7 +116,7 @@ export default {
       formData.append("user", this.user);
       try {
         const response = await axios.post(
-          "http://localhost:5000/api/get_presigned_url",
+          "/api/get_presigned_url",
           formData
         );
         const presignedUrl = response.data.url;
@@ -138,7 +138,7 @@ export default {
           },
         });
         console.log("Video uploaded successfully");
-        await axios.post("http://localhost:5000/api/tasks", {
+        await axios.post("/api/tasks", {
           key: "videos/" + this.user + "/" + this.title,
           user: this.user,
           title: this.title,
@@ -147,7 +147,7 @@ export default {
           time: response.data.datetime,
         });
         console.log("Thumbnail fetched");
-        await axios.post("http://localhost:5000/api/initialize", {
+        await axios.post("/api/initialize", {
           video_id: response.data.id,
         });
         console.log("Added to db");
@@ -161,7 +161,7 @@ export default {
     //getting username using authentication token
     const auth = useAuthStore();
     axios
-      .post("http://localhost:5000/api/get_user_using_token", {
+      .post("/api/get_user_using_token", {
         token: auth.getToken(),
       })
       .then((response) => {
@@ -172,12 +172,12 @@ export default {
       });
 
       axios
-      .get("http://localhost:5000/api/fetch_username")
+      .get("/api/fetch_username")
       .then((response) => {
         this.user = response.data.name;
         console.log("user: ", response.data.name);
         axios
-          .post("http://localhost:5000/api/get_token", {
+          .post("/api/get_token", {
             username: response.data.name,
           })
           .then((response) => {

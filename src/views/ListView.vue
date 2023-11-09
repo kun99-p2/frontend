@@ -63,7 +63,7 @@ export default {
   methods: {
     clickedVideo(id, user, title) {
       axios
-        .post("http://localhost:5000/api/set_videod", {
+        .post("/api/set_videod", {
           id: id,
           title: title,
           i: 0,
@@ -80,7 +80,7 @@ export default {
     },
     deleteVideo(title, id) {
       axios
-        .delete("http://localhost:5000/api/delete", {
+        .delete("/api/delete", {
           data: {
             username: this.user,
             title: title,
@@ -88,9 +88,9 @@ export default {
           },
         })
         .then((response) => {
-          axios.delete("http://localhost:5000/api/remove_views/${id}");
+          axios.delete("/api/remove_views/${id}");
           alert(response.data.message);
-          window.location.href = "http://localhost:4000/list";
+          this.$router.push("/list");
         })
         .catch((error) => {
           console.error("Couldn't delete thumbnail:", error);
@@ -99,12 +99,12 @@ export default {
   },
   mounted() {
     axios
-      .get("http://localhost:5000/api/fetch_username")
+      .get("/api/fetch_username")
       .then((response) => {
         this.user = response.data.name;
         console.log(this.user);
         axios
-          .post("http://localhost:5000/api/my_thumbnails", {
+          .post("/api/my_thumbnails", {
             username: response.data.name,
           })
           .then((response) => {
@@ -120,12 +120,12 @@ export default {
   },
   created() {
     axios
-      .get("http://localhost:5000/api/fetch_username")
+      .get("/api/fetch_username")
       .then((response) => {
         this.user = response.data.name;
         console.log("user: ", response.data.name);
         axios
-          .post("http://localhost:5000/api/get_token", {
+          .post("/api/get_token", {
             username: response.data.name,
           })
           .then((response) => {
