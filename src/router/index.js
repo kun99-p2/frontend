@@ -43,6 +43,11 @@ const router = createRouter({
       name: 'playback',
       component: () => import('../views/PlaybackView.vue')
     },
+    {
+      path: '/test',
+      name: 'test',
+      component: () => import('../views/TestView.vue')
+    },
   ]
 })
 

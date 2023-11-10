@@ -3,7 +3,7 @@
     <div
       v-for="thumbnail in thumbnails"
       :key="thumbnail[0].metadata.id"
-      class="thumbnail-item"
+      class="mt-[20px] flex justify-center"
     >
       <div>
         <img
@@ -15,7 +15,7 @@
               thumbnail[0].metadata.title
             )
           "
-          class="h-auto max-w-full rounded-lg cursor-pointer"
+          class="h-[300px] w-[400px] rounded-lg cursor-pointer"
         />
         <div class="flex flex-col justify-start w-full">
           <div class="flex flex-row">
@@ -26,7 +26,7 @@
               </p>
             </div>
             <div class="w-1/5">
-              <p class="text-white">Views: {{ thumbnail[0]['views'] }}</p>
+              <p class="text-white">Views: {{ thumbnail[0]["views"] }}</p>
             </div>
           </div>
         </div>
@@ -35,36 +35,29 @@
   </div>
 </template>
 
-<style>
-.videos-container {
-  display: flex;
-  flex-wrap: wrap;
-}
-
-.thumbnail-item {
-  margin-top: 20px;
-  flex: 1;
-  display: flex;
-  justify-content: center;
-}
-.thumbnail-item img {
-  height: 300px;
-  width: 400px;
-  cursor: pointer;
-}
-</style>
-
 <script>
 import axios from "axios";
+import io from "socket.io-client"; 
 import { useAuthStore } from "../stores/store";
+
 export default {
   data() {
     return {
       user: "",
       thumbnails: [],
+      socket: null,
     };
   },
   methods: {
+    setupSocket() {
+      this.socket = io.connect("http://localhost:5000");
+      this.socket.on('update_views', (views) => {
+        this.views = views.views;
+      });
+      this.socket.on('update_likes', (views) => {
+        this.views = views.likes;
+      });
+    },
     clickedVideo(id, user, title) {
       axios
         .post("/api/set_videod", {
@@ -82,13 +75,14 @@ export default {
         });
     },
     sortVids() {
-      let axiosRequests = [];
+      let axiosRequests = []
       for (let thumbnail of this.thumbnails) {
         axiosRequests.push(
           axios
             .get("/api/views/" + thumbnail[0].metadata.id)
             .then((response) => {
               thumbnail[0]["views"] = response.data.views;
+              thumbnail[0]["likes"] = response.data.likes;
             })
         );
       }
@@ -106,6 +100,11 @@ export default {
         });
     },
   },
+  mounted() {
+    setInterval(() => {
+      this.sortVids();
+    }, 5000);
+  },
   beforeMount() {
     axios
       .get("/api/thumbnails")
@@ -116,6 +115,7 @@ export default {
       .catch((error) => {
         console.error("Couldn't fetch thumbnails:", error);
       });
+    this.setupSocket();
   },
   created() {
     axios

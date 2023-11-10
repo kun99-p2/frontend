@@ -4,24 +4,29 @@
   >
     <RouterLink to="/" class="flex items-center">
       <img src="@/assets/toktik.png" class="h-8 mr-3" alt="toktik logo" />
-      <span
-        class="self-center text-2xl font-semibold whitespace-nowrap"
-        ><RouterLink to="/home">
-          <button class="text-white">TokTik</button>
-        </RouterLink></span
-      >
+      <span class="self-center text-2xl font-semibold whitespace-nowrap">
+        <div v-if="userStore.getAuthenticated()">
+          <RouterLink to="/home">
+            <button class="text-white">TokTik</button>
+          </RouterLink>
+        </div>
+        <div v-else>
+          <RouterLink to="/">
+            <button class="text-white">TokTik</button>
+          </RouterLink>
+        </div>
+      </span>
     </RouterLink>
-    <div class="flex md:order-2">
+    <div v-if="userStore.getAuthenticated()" class="flex md:order-2">
       <button
-        type="button"
+        class="text-white bg-red-500 hover:bg-hover focus:ring-4 focus:outline-none focus:ring-red-700 font-medium rounded-lg text-sm px-4 py-2 text-center mr-3"
         @click="logout"
-        to="/"
-        class="text-white bg-red-500 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center mr-3 md:mr-0"
       >
         Logout
       </button>
     </div>
     <div
+      v-if="userStore.getAuthenticated()"
       class="items-center justify-between hidden w-full md:flex md:w-auto md:order-1"
     >
       <ul
@@ -51,14 +56,28 @@
 import axios from "axios";
 import { useAuthStore } from "../stores/store";
 export default {
+  data() {
+    return {
+      store: null,
+    }
+  },
+  created() {
+    this.store = useAuthStore();
+    this.store.clearToken();
+  },
+  computed: {
+    userStore() {
+      console.log(this.store.getAuthenticated());
+      return this.store;
+    },
+  },
   methods: {
     logout() {
       axios
-        .post("http://localhost:5000/api/logout")
+        .post("api/logout")
         .then((response) => {
-          const auth = useAuthStore();
-          auth.clearToken;
-          this.$router.push('/');
+          this.store.clearToken();
+          this.$router.push("/");
         })
         .catch((error) => {
           console.error(error);

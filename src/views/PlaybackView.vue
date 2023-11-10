@@ -25,8 +25,16 @@
             <p class="text-white">Views: {{ this.views }}</p>
           </div>
         </div>
-        <div>
-          <p class="text-white">{{ this.desc }}</p>
+        <div class="flex flex-row">
+          <div class="w-5/6">
+            <p class="text-white">{{ this.desc }}</p>
+          </div>
+          <div class="w-1/6">
+            <button @click="increaseLikes" class="text-white bg-primary">
+              Likes
+              {{ this.likes }}
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -34,8 +42,10 @@
 </template>
 
 <script>
+import { useAuthStore } from "../stores/store.js";
 import axios from "axios";
 import videojs from "video.js";
+import io from "socket.io-client";
 export default {
   data() {
     return {
@@ -46,12 +56,31 @@ export default {
       title: "",
       desc: "",
       views: "",
+      likes: "",
       i: 0,
       m3u8: "",
       player: null,
+      socket: null,
     };
   },
   methods: {
+    setupSocket() {
+      this.socket = io.connect("http://localhost:5000");
+      this.socket.on("update_views", (views) => {
+        console.log(views)
+        this.views = views.views;
+      });
+      this.socket.on("update_likes", (data) => {
+        console.log(data.views)
+        this.likes = data.views;
+      });
+    },
+    notifyWebSocketServer(views) {
+      this.socket.emit("update_views", views);
+    },
+    notifyWebSocketServerLikes() {
+      this.socket.emit("update_likes", this.likes);
+    },
     clickedVideo(id, title) {
       axios
         .post("/api/set_videod", {
@@ -85,9 +114,24 @@ export default {
       try {
         const response = await axios.post("/api/increment/" + videoId);
         this.views = response.data.views;
+        this.notifyWebSocketServer(this.views);
       } catch (error) {
         console.error("Couldn't increment views.");
       }
+    },
+    increaseLikes() {
+      try {
+        axios.post("/api/like/" + this.id).then((response) => {
+          this.likes = response.data.likes;
+          this.notifyWebSocketServerLikes();
+        });
+      } catch (error) {
+        console.error("Couldn't increment likes.");
+      }
+    },
+    async getLikes() {
+      const response = await axios.get("/api/views/" + this.id);
+      this.likes = response.data.likes;
     },
     initVideo() {
       this.player = videojs(this.$refs.videoPlayer, {
@@ -103,6 +147,7 @@ export default {
     },
   },
   mounted() {
+    const auth = useAuthStore();
     axios
       .get("/api/videod")
       .then((response) => {
@@ -122,7 +167,9 @@ export default {
             this.title = response.data.metadata.title;
             this.desc = response.data.metadata.desc;
             this.m3u8 = response.data.m3u8;
+            this.setupSocket();
             this.increaseViews(this.id);
+            this.getLikes();
             this.initVideo();
             this.player.on("pause", () => {
               this.$refs.videoPlayer.pause();

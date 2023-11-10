@@ -1,23 +1,22 @@
 <template>
-  <h1 class="flex justify-center text-white">My Videos</h1>
-  <div class="flex justify-center items-center">
-    <div>
-      <div class="mb-4" v-for="thumbnail in thumbnails" :keys="thumbnail">
-        <div
-          class="flex flex-col items-center bg-white border border-gray-200 rounded-lg shadow md:flex-row md:max-w-2xl hover:bg-gray-100"
-        >
-          <img
-            class="object-cover w-full rounded-t-lg h-96 md:h-auto md:w-48 md:rounded-none md:rounded-l-lg cursor-pointer"
-            :src="thumbnail[0].file"
-            @click="
-              clickedVideo(
-                thumbnail[0].metadata.id,
-                thumbnail[0].metadata.user,
-                thumbnail[0].metadata.title
-              )
-            "
-          />
-          <div class="flex flex-col justify-between p-4 leading-normal">
+  <div class=" w-full">
+    <div class="m-6" v-for="thumbnail in thumbnails" :keys="thumbnail">
+      <div
+        class="flex flex-col items-center bg-white border border-gray-200 rounded-lg shadow md:flex-row hover:bg-gray-100"
+      >
+        <img
+          class="object-cover w-full rounded-t-lg h-96 md:h-auto md:w-48 md:rounded-none md:rounded-l-lg cursor-pointer"
+          :src="thumbnail[0].file"
+          @click="
+            clickedVideo(
+              thumbnail[0].metadata.id,
+              thumbnail[0].metadata.user,
+              thumbnail[0].metadata.title
+            )
+          "
+        />
+        <div class="flex justify-between p-4 w-full">
+          <div class="flex flex-col leading-normal w-7/12">
             <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900">
               {{ thumbnail[0].metadata.title }}
             </h5>
@@ -25,30 +24,42 @@
               {{ thumbnail[0].metadata.desc }}
             </p>
           </div>
-          <button
-            @click="
-              deleteVideo(thumbnail[0].metadata.title, thumbnail[0].metadata.id)
-            "
-            class="cursor-pointer bg-red-300"
-          >
-            X
-          </button>
+          <div class="flex justify-center w-1/12">
+            Date
+          </div>
+          <div class="flex justify-center w-1/12">
+            Views
+          </div>
+          <div class="flex justify-center w-1/12">
+            Comments
+          </div>
+          <div class="flex justify-center w-1/12">
+            Likes
+          </div>
+          <div class="flex flex-col items-center w-1/12">
+            <button
+              @click="
+                deleteVideo(
+                  thumbnail[0].metadata.title,
+                  thumbnail[0].metadata.id
+                )
+              "
+              class="cursor-pointer bg-red-300 w-8"
+            >
+              X
+            </button>
+            <button
+              @click=""
+              class="mt-4 cursor-pointer bg-green-300 w-8"
+            >
+              Edit
+            </button>
+          </div>
         </div>
       </div>
     </div>
   </div>
 </template>
-
-<style>
-.thumbnail-container {
-  display: flex;
-  align-items: center;
-  justify-content: space-around;
-  margin: auto 50px;
-  margin-top: 20px;
-  background-color: aliceblue;
-}
-</style>
 
 <script>
 import { useAuthStore } from "../stores/store";
@@ -90,7 +101,7 @@ export default {
         .then((response) => {
           axios.delete("/api/remove_views/${id}");
           alert(response.data.message);
-          this.$router.push("/list");
+          this.$router.go("");
         })
         .catch((error) => {
           console.error("Couldn't delete thumbnail:", error);
