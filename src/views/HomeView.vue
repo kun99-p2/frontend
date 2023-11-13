@@ -5,29 +5,40 @@
       :key="thumbnail[0].metadata.id"
       class="mt-[20px] flex justify-center"
     >
-      <div>
-        <img
-          :src="thumbnail[0].file"
-          @click="
-            clickedVideo(
-              thumbnail[0].metadata.id,
-              thumbnail[0].metadata.user,
-              thumbnail[0].metadata.title
-            )
-          "
-          class="h-[300px] w-[400px] rounded-lg cursor-pointer"
-        />
-        <div class="flex flex-col justify-start w-full">
-          <div class="flex flex-row">
-            <div class="w-4/5">
-              <p class="text-white font-bold">
-                {{ thumbnail[0].metadata.title }} -
-                {{ thumbnail[0].metadata.user }}
-              </p>
+      <div class="flex flex-row">
+        <div>
+          <img
+            :src="thumbnail[0].file"
+            @click="
+              clickedVideo(
+                thumbnail[0].metadata.id,
+                thumbnail[0].metadata.title
+              )
+            "
+            class="h-[300px] w-[400px] rounded-lg cursor-pointer"
+          />
+          <div class="flex flex-col justify-start w-full">
+            <div class="flex flex-row">
+              <div class="w-4/5">
+                <p class="text-white font-bold">
+                  {{ thumbnail[0].metadata.title }} -
+                  {{ thumbnail[0].metadata.user }}
+                </p>
+              </div>
+              <!-- <div class="w-1/5">
+                <p class="text-white">Views: {{ thumbnail[0]["views"] }}</p>
+              </div> -->
             </div>
-            <div class="w-1/5">
-              <p class="text-white">Views: {{ thumbnail[0]["views"] }}</p>
-            </div>
+          </div>
+        </div>
+        <div class="flex flex-col">
+          <div class="text-white">Views:</div>
+          <div class="text-white">
+            {{ thumbnail[0]["views"] }}
+          </div>
+          <div class="text-white">Likes:</div>
+          <div class="text-white">
+            {{ thumbnail[0]["likes"] }}
           </div>
         </div>
       </div>
@@ -37,7 +48,7 @@
 
 <script>
 import axios from "axios";
-import io from "socket.io-client"; 
+import io from "socket.io-client";
 import { useAuthStore } from "../stores/store";
 
 export default {
@@ -51,14 +62,14 @@ export default {
   methods: {
     setupSocket() {
       this.socket = io.connect("http://localhost:5000");
-      this.socket.on('update_views', (views) => {
+      this.socket.on("update_views", (views) => {
         this.views = views.views;
       });
-      this.socket.on('update_likes', (views) => {
+      this.socket.on("update_likes", (views) => {
         this.views = views.likes;
       });
     },
-    clickedVideo(id, user, title) {
+    clickedVideo(id, title) {
       axios
         .post("/api/set_videod", {
           id: id,
@@ -75,7 +86,7 @@ export default {
         });
     },
     sortVids() {
-      let axiosRequests = []
+      let axiosRequests = [];
       for (let thumbnail of this.thumbnails) {
         axiosRequests.push(
           axios
