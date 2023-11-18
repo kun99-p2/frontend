@@ -92,7 +92,7 @@ export default {
   },
   mounted() {
     this.notificationList = [];
-    this.getNotifications();
+    //this.getNotifications();
     //this.setupSocket();
   },
   computed: {
@@ -108,12 +108,12 @@ export default {
     //     this.notificationList = notifications.notifications;
     //   });
     // },
-    getNotifications() {
-      axios.get("/api/get-notifications").then((response) => {
-        console.log(response.data.notifications);
-        this.notificationList = response.data.notifications;
-      });
-    },
+    // getNotifications() {
+    //   axios.get("/api/get-notifications").then((response) => {
+    //     console.log(response.data.notifications);
+    //     this.notificationList = response.data.notifications;
+    //   });
+    // },
     toggleDropdown() {
       this.isDropdownOpen = !this.isDropdownOpen;
     },
