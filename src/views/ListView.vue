@@ -1,6 +1,6 @@
 <template>
   <nav class="z-20 top-0 left-0 border-b border-gray-800">
-    <NavBar/>
+    <NavBar />
   </nav>
   <div class="w-full">
     <div class="m-6" v-for="thumbnail in thumbnails" :keys="thumbnail">
@@ -57,95 +57,95 @@ import NavBar from "../components/NavBar.vue";
 import { useAuthStore } from "../stores/store";
 import axios from "axios";
 export default {
-    data() {
-        return {
-            user: "",
-            thumbnails: [],
-        };
-    },
-    methods: {
-        clickedVideo(id) {
-            axios
-                .post("/api/set_videod", {
-                id: id,
-                i: 0,
-            })
-                .then((response) => {
-                this.$router.push("/playback");
-            })
-                .catch((error) => {
-                console.error(error);
-                alert("It ain't good");
-                this.$router.push("/home");
-            });
-            this.$router.push("/playback");
-        },
-        deleteVideo(title, id) {
-            axios
-                .delete("/api/delete", {
-                data: {
-                    username: this.user,
-                    title: title,
-                    id: id,
-                },
-            })
-                .then((response) => {
-                axios.delete("/api/remove_views/${id}");
-                alert(response.data.message);
-                this.$router.go("");
-            })
-                .catch((error) => {
-                console.error("Couldn't delete thumbnail:", error);
-            });
-        },
-    },
-    mounted() {
-        axios
-            .get("/api/fetch_username")
-            .then((response) => {
-            this.user = response.data.name;
-            console.log(this.user);
-            axios
-                .post("/api/my_thumbnails", {
-                username: response.data.name,
-            })
-                .then((response) => {
-                this.thumbnails = response.data.thumbnails;
-            })
-                .catch((error) => {
-                console.error("Couldn't fetch thumbnails:", error);
-            });
+  data() {
+    return {
+      user: "",
+      thumbnails: [],
+    };
+  },
+  methods: {
+    clickedVideo(id) {
+      axios
+        .post("/api/set_videod", {
+          id: id,
+          i: 0,
         })
-            .catch((error) => {
-            console.error("Couldn't retrieve username:", error);
+        .then((response) => {
+          this.$router.push("/playback");
+        })
+        .catch((error) => {
+          console.error(error);
+          alert("It ain't good");
+          this.$router.push("/home");
+        });
+      this.$router.push("/playback");
+    },
+    deleteVideo(title, id) {
+      axios
+        .delete("/api/delete", {
+          data: {
+            username: this.user,
+            title: title,
+            id: id,
+          },
+        })
+        .then((response) => {
+          axios.delete("/api/remove_views/${id}");
+          alert(response.data.message);
+          this.$router.go("");
+        })
+        .catch((error) => {
+          console.error("Couldn't delete thumbnail:", error);
         });
     },
-    created() {
+  },
+  mounted() {
+    axios
+      .get("/api/fetch_username")
+      .then((response) => {
+        this.user = response.data.name;
+        console.log(this.user);
         axios
-            .get("/api/fetch_username")
-            .then((response) => {
-            this.user = response.data.name;
-            console.log("user: ", response.data.name);
-            axios
-                .post("/api/get_token", {
-                username: response.data.name,
-            })
-                .then((response) => {
-                const auth = useAuthStore();
-                auth.setToken(response.data.token);
-            })
-                .catch((error) => {
-                console.error(error);
-                alert("Login again");
-                this.$router.push("/");
-            });
-        })
-            .catch((error) => {
-            console.error(error);
-            alert("Login again");
-            this.$router.push("/");
-        });
-    },
-    components: { NavBar }
+          .post("/api/my_thumbnails", {
+            username: response.data.name,
+          })
+          .then((response) => {
+            this.thumbnails = response.data.thumbnails;
+          })
+          .catch((error) => {
+            console.error("Couldn't fetch thumbnails:", error);
+          });
+      })
+      .catch((error) => {
+        console.error("Couldn't retrieve username:", error);
+      });
+  },
+  created() {
+    // axios
+    //   .get("/api/fetch_username")
+    //   .then((response) => {
+    //     this.user = response.data.name;
+    //     console.log("user: ", response.data.name);
+    //     axios
+    //       .post("/api/get_token", {
+    //         username: response.data.name,
+    //       })
+    //       .then((response) => {
+    //         const auth = useAuthStore();
+    //         auth.setToken(response.data.token);
+    //       })
+    //       .catch((error) => {
+    //         console.error(error);
+    //         alert("Login again");
+    //         this.$router.push("/");
+    //       });
+    //   })
+    //   .catch((error) => {
+    //     console.error(error);
+    //     alert("Login again");
+    //     this.$router.push("/");
+    //   });
+  },
+  components: { NavBar },
 };
 </script>

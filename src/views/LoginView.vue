@@ -1,6 +1,6 @@
 <template>
   <nav class="z-20 top-0 left-0 border-b border-gray-800">
-    <NavBar/>
+    <NavBar />
   </nav>
   <div class="flex justify-center mt-10">
     <div
@@ -57,34 +57,34 @@ import axios from "axios";
 import { useAuthStore } from "../stores/store.js";
 import NavBar from "../components/NavBar.vue";
 export default {
-    data() {
-        return {
-            username: "",
-            password: "",
-        };
+  data() {
+    return {
+      username: "",
+      password: "",
+    };
+  },
+  methods: {
+    login() {
+      axios
+        .post("/api/login", {
+          username: this.username,
+          password: this.password,
+        })
+        .then((response) => {
+          const auth = useAuthStore();
+          console.log(auth.getAuthenticated());
+          auth.setToken(response.data.token);
+          console.log(response.data.token);
+          this.$router.push("/home");
+        })
+        .catch((error) => {
+          console.error(error);
+        });
     },
-    methods: {
-        login() {
-            axios
-                .post("/api/login", {
-                username: this.username,
-                password: this.password,
-            })
-                .then((response) => {
-                const auth = useAuthStore();
-                console.log(auth.getAuthenticated());
-                auth.setToken(response.data.token);
-                console.log(response.data.token);
-                this.$router.push("/home");
-            })
-                .catch((error) => {
-                console.error(error);
-            });
-        },
-        // cancel() {
-        //   this.$router.push("/");
-        // },
-    },
-    components: { NavBar }
+    // cancel() {
+    //   this.$router.push("/");
+    // },
+  },
+  components: { NavBar },
 };
 </script>

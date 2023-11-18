@@ -127,30 +127,30 @@ export default {
     //this.setupSocket();
   },
   created() {
-    axios
-      .get("/api/fetch_username")
-      .then((response) => {
-        this.user = response.data.name;
-        console.log("user: ", response.data.name);
-        axios
-          .post("/api/get_token", {
-            username: response.data.name,
-          })
-          .then((response) => {
-            const auth = useAuthStore();
-            auth.setToken(response.data.token);
-          })
-          .catch((error) => {
-            console.error(error);
-            alert("Login again");
-            this.$router.push("/");
-          });
-      })
-      .catch((error) => {
-        console.error(error);
-        alert("Login again");
-        this.$router.push("/");
-      });
+    // axios
+    //   .get("/api/fetch_username")
+    //   .then((response) => {
+    //     this.user = response.data.name;
+    //     console.log("user: ", response.data.name);
+    //     axios
+    //       .post("/api/get_token", {
+    //         username: response.data.name,
+    //       })
+    //       .then((response) => {
+    //         const auth = useAuthStore();
+    //         auth.setToken(response.data.token);
+    //       })
+    //       .catch((error) => {
+    //         console.error(error);
+    //         alert("Login again");
+    //         this.$router.push("/");
+    //       });
+    //   })
+    //   .catch((error) => {
+    //     console.error(error);
+    //     alert("Login again");
+    //     this.$router.push("/");
+    //   });
   },
   components: { NavBar },
 };

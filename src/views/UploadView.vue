@@ -1,6 +1,6 @@
 <template>
   <nav class="z-20 top-0 left-0 border-b border-gray-800">
-    <NavBar/>
+    <NavBar />
   </nav>
   <h1 style="display: flex; justify-content: center">Upload</h1>
   <div class="flex flex-col">
@@ -79,136 +79,135 @@ import axios from "axios";
 import { useAuthStore } from "../stores/store";
 import NavBar from "../components/NavBar.vue";
 export default {
-    data() {
-        return {
-            instruction: "Drag and drop a video",
-            video: null,
-            title: "",
-            desc: "",
-            user: "",
-        };
+  data() {
+    return {
+      instruction: "Drag and drop a video",
+      video: null,
+      title: "",
+      desc: "",
+      user: "",
+    };
+  },
+  methods: {
+    async handleDrop(event) {
+      event.preventDefault();
+      this.video = event.dataTransfer.files[0];
+      this.instruction = "Video dropped.";
     },
-    methods: {
-        async handleDrop(event) {
-            event.preventDefault();
-            this.video = event.dataTransfer.files[0];
-            this.instruction = "Video dropped.";
-        },
-        async uploadVideo() {
-            if (this.video && this.video.type.startsWith("video/")) {
-                if (this.title && this.desc) {
-                    const duration = await this.checkVideoDuration();
-                    if (duration <= 60) {
-                        await this.uploadVideoToS3();
-                    }
-                    else {
-                        alert("Video exceeding 60 seconds.");
-                    }
-                }
-                else {
-                    alert("Missing title or description.");
-                }
-            }
-            else {
-                alert("Missing video file.");
-            }
-        },
-        async checkVideoDuration() {
-            return new Promise((resolve, reject) => {
-                const videoElement = document.createElement("video");
-                videoElement.src = URL.createObjectURL(this.video);
-                videoElement.addEventListener("loadedmetadata", () => {
-                    this.videoDuration = videoElement.duration;
-                    resolve(this.videoDuration);
-                });
-                videoElement.addEventListener("error", (error) => {
-                    reject(error);
-                });
-            });
-        },
-        async uploadVideoToS3() {
-            const formData = new FormData();
-            formData.append("title", this.title);
-            formData.append("user", this.user);
-            try {
-                const response = await axios.post("/api/get_presigned_url", formData);
-                const presignedUrl = response.data.url;
-                console.log(presignedUrl);
-                await axios.put(presignedUrl, this.video, {
-                    headers: {
-                        "x-amz-meta-title": this.title,
-                        "x-amz-meta-id": response.data.id,
-                        "x-amz-meta-time": response.data.datetime,
-                        "x-amz-meta-desc": this.desc,
-                        "Content-Type": "video/mp4",
-                        Metadata: {
-                            "x-amz-meta-title": this.title,
-                            "x-amz-meta-user": this.user,
-                            "x-amz-meta-id": response.data.id,
-                            "x-amz-meta-desc": this.desc,
-                            "x-amz-meta-time": response.data.datetime,
-                        },
-                    },
-                });
-                console.log("Video uploaded successfully");
-                await axios.post("/api/tasks", {
-                    key: "videos/" + this.user + "/" + this.title,
-                    user: this.user,
-                    title: this.title,
-                    desc: this.desc,
-                    id: response.data.id,
-                    time: response.data.datetime,
-                });
-                console.log("Thumbnail fetched");
-                await axios.post("/api/initialize", {
-                    video_id: response.data.id,
-                });
-                console.log("Added to db");
-                window.location = "list";
-            }
-            catch (error) {
-                console.error("Error uploading video:", error);
-            }
-        },
+    async uploadVideo() {
+      if (this.video && this.video.type.startsWith("video/")) {
+        if (this.title && this.desc) {
+          const duration = await this.checkVideoDuration();
+          if (duration <= 60) {
+            await this.uploadVideoToS3();
+          } else {
+            alert("Video exceeding 60 seconds.");
+          }
+        } else {
+          alert("Missing title or description.");
+        }
+      } else {
+        alert("Missing video file.");
+      }
     },
-    created() {
-        //getting username using authentication token
-        const auth = useAuthStore();
-        axios
-            .post("/api/get_user_using_token", {
-            token: auth.getToken(),
-        })
-            .then((response) => {
-            this.user = response.data.username;
-        })
-            .catch((error) => {
-            console.log(error.response.data.message);
+    async checkVideoDuration() {
+      return new Promise((resolve, reject) => {
+        const videoElement = document.createElement("video");
+        videoElement.src = URL.createObjectURL(this.video);
+        videoElement.addEventListener("loadedmetadata", () => {
+          this.videoDuration = videoElement.duration;
+          resolve(this.videoDuration);
         });
-        axios
-            .get("/api/fetch_username")
-            .then((response) => {
-            this.user = response.data.name;
-            console.log("user: ", response.data.name);
-            axios
-                .post("/api/get_token", {
-                username: response.data.name,
-            })
-                .then((response) => {
-                const auth = useAuthStore();
-                auth.setToken(response.data.token);
-            })
-                .catch((error) => {
-                console.error(error);
-                alert("Login again");
-                this.$router.push("/");
-            });
-        })
-            .catch((error) => {
-            console.error(error);
-            alert("Login again");
-            this.$router.push("/");
+        videoElement.addEventListener("error", (error) => {
+          reject(error);
         });
+      });
     },
-    components: { NavBar }
+    async uploadVideoToS3() {
+      const formData = new FormData();
+      formData.append("title", this.title);
+      formData.append("user", this.user);
+      try {
+        const response = await axios.post("/api/get_presigned_url", formData);
+        const presignedUrl = response.data.url;
+        console.log(presignedUrl);
+        await axios.put(presignedUrl, this.video, {
+          headers: {
+            "x-amz-meta-title": this.title,
+            "x-amz-meta-id": response.data.id,
+            "x-amz-meta-time": response.data.datetime,
+            "x-amz-meta-desc": this.desc,
+            "Content-Type": "video/mp4",
+            Metadata: {
+              "x-amz-meta-title": this.title,
+              "x-amz-meta-user": this.user,
+              "x-amz-meta-id": response.data.id,
+              "x-amz-meta-desc": this.desc,
+              "x-amz-meta-time": response.data.datetime,
+            },
+          },
+        });
+        console.log("Video uploaded successfully");
+        await axios.post("/api/tasks", {
+          key: "videos/" + this.user + "/" + this.title,
+          user: this.user,
+          title: this.title,
+          desc: this.desc,
+          id: response.data.id,
+          time: response.data.datetime,
+        });
+        console.log("Thumbnail fetched");
+        await axios.post("/api/initialize", {
+          video_id: response.data.id,
+        });
+        console.log("Added to db");
+        window.location = "list";
+      } catch (error) {
+        console.error("Error uploading video:", error);
+      }
+    },
+  },
+  created() {
+    //getting username using authentication token
+    const auth = useAuthStore();
+    axios.get("/api/fetch_username").then((response) => {
+      this.user = response.data.name;
+    });
+    // axios
+    //     .post("/api/get_user_using_token", {
+    //     token: auth.getToken(),
+    // })
+    //     .then((response) => {
+    //     this.user = response.data.username;
+    // })
+    //     .catch((error) => {
+    //     console.log(error.response.data.message);
+    // });
+    // axios
+    //     .get("/api/fetch_username")
+    //     .then((response) => {
+    //     this.user = response.data.name;
+    //     console.log("user: ", response.data.name);
+    //     axios
+    //         .post("/api/get_token", {
+    //         username: response.data.name,
+    //     })
+    //         .then((response) => {
+    //         const auth = useAuthStore();
+    //         auth.setToken(response.data.token);
+    //     })
+    //         .catch((error) => {
+    //         console.error(error);
+    //         alert("Login again");
+    //         this.$router.push("/");
+    //     });
+    // })
+    //     .catch((error) => {
+    //     console.error(error);
+    //     alert("Login again");
+    //     this.$router.push("/");
+    // });
+  },
+  components: { NavBar },
 };
 </script>
