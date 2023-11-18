@@ -1,4 +1,7 @@
 <template>
+  <nav class="z-20 top-0 left-0 border-b border-gray-800">
+    <Navbar/>
+  </nav>
   <div class="relative mx-auto pt-20">
     <div
       class="mb-4 text-4xl font-bold tracking-tight text-white text-center xl:px-36 lg:mb-7"
@@ -6,7 +9,7 @@
       <h1 class="mb-4 font-extrabold text-white md:text-5xl lg:text-6xl">
         <span
           class="text-transparent bg-clip-text bg-gradient-to-r from-zinc-100 to-rose-800"
-          >Kinda Scalable</span
+          >Not Really Scalable</span
         >
         Video Streaming.
       </h1>
@@ -35,10 +38,12 @@
   </div>
 </template>
 <script>
+import Navbar from "../components/navbar.vue";
 import { useAuthStore } from "../stores/store.js";
 export default {
-  created() {
-    const auth = useAuthStore();
-  }
+    created() {
+        const auth = useAuthStore();
+    },
+    components: { Navbar }
 }
 </script>

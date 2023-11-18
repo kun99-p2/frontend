@@ -1,4 +1,7 @@
 <template>
+  <nav class="z-20 top-0 left-0 border-b border-gray-800">
+    <Navbar/>
+  </nav>
   <div class="flex justify-center mt-10">
     <div
       class="w-full max-w-sm p-4 rounded-lg shadow sm:p-6 md:p-8 bg-gray-300 border-gray-700"
@@ -52,34 +55,36 @@
 <script>
 import axios from "axios";
 import { useAuthStore } from "../stores/store.js";
+import Navbar from "../components/NavBar.vue";
 export default {
-  data() {
-    return {
-      username: "",
-      password: "",
-    };
-  },
-  methods: {
-    login() {
-      axios
-        .post("/api/login", {
-          username: this.username,
-          password: this.password,
-        })
-        .then((response) => {
-          const auth = useAuthStore();
-          console.log(auth.getAuthenticated());
-          auth.setToken(response.data.token);
-          console.log(response.data.token);
-          this.$router.push("/home");
-        })
-        .catch((error) => {
-          console.error(error);
-        });
+    data() {
+        return {
+            username: "",
+            password: "",
+        };
     },
-    // cancel() {
-    //   this.$router.push("/");
-    // },
-  },
+    methods: {
+        login() {
+            axios
+                .post("/api/login", {
+                username: this.username,
+                password: this.password,
+            })
+                .then((response) => {
+                const auth = useAuthStore();
+                console.log(auth.getAuthenticated());
+                auth.setToken(response.data.token);
+                console.log(response.data.token);
+                this.$router.push("/home");
+            })
+                .catch((error) => {
+                console.error(error);
+            });
+        },
+        // cancel() {
+        //   this.$router.push("/");
+        // },
+    },
+    components: { Navbar }
 };
 </script>

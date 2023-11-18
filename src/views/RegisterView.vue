@@ -1,4 +1,7 @@
 <template>
+  <nav class="z-20 top-0 left-0 border-b border-gray-800">
+    <Navbar/>
+  </nav>
   <div class="flex justify-center mt-10">
     <div
       class="w-full max-w-sm p-4 rounded-lg shadow sm:p-6 md:p-8 bg-gray-300 border-gray-700"
@@ -46,31 +49,33 @@
 
 <script>
 import axios from "axios";
+import Navbar from "../components/navbar.vue";
 export default {
-  data() {
-    return {
-      username: "",
-      password: "",
-    };
-  },
-  methods: {
-    register() {
-      axios
-        .post("/api/register", {
-          username: this.username,
-          password: this.password,
-        })
-        .then((response) => {
-          console.log(response.data);
-          this.$router.push("/success");
-        })
-        .catch((error) => {
-          console.error(error);
-        });
+    data() {
+        return {
+            username: "",
+            password: "",
+        };
     },
-    cancel() {
-      this.$router.push("/");
+    methods: {
+        register() {
+            axios
+                .post("/api/register", {
+                username: this.username,
+                password: this.password,
+            })
+                .then((response) => {
+                console.log(response.data);
+                this.$router.push("/success");
+            })
+                .catch((error) => {
+                console.error(error);
+            });
+        },
+        cancel() {
+            this.$router.push("/");
+        },
     },
-  },
+    components: { Navbar }
 };
 </script>

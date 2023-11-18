@@ -1,4 +1,7 @@
 <template>
+  <nav class="z-20 top-0 left-0 border-b border-gray-800">
+    <Navbar/>
+  </nav>
   <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
     <div
       v-for="thumbnail in thumbnails"
@@ -9,12 +12,7 @@
         <div>
           <img
             :src="thumbnail[0].file"
-            @click="
-              clickedVideo(
-                thumbnail[0].metadata.id,
-                thumbnail[0].metadata.title
-              )
-            "
+            @click="clickedVideo(thumbnail[0].metadata.id)"
             class="h-[300px] w-[400px] rounded-lg cursor-pointer"
           />
           <div class="flex flex-col justify-start w-full">
@@ -25,18 +23,19 @@
                   {{ thumbnail[0].metadata.user }}
                 </p>
               </div>
-              <!-- <div class="w-1/5">
-                <p class="text-white">Views: {{ thumbnail[0]["views"] }}</p>
-              </div> -->
             </div>
           </div>
         </div>
-        <div class="flex flex-col">
-          <div class="text-white">Views:</div>
+        <div class="flex flex-col ml-2 mt-2 items-center">
+          <div class="text-white">
+            <font-awesome-icon icon="fa-solid fa-eye" />
+          </div>
           <div class="text-white">
             {{ thumbnail[0]["views"] }}
           </div>
-          <div class="text-white">Likes:</div>
+          <div class="text-white">
+            <font-awesome-icon icon="fa-solid fa-heart" />
+          </div>
           <div class="text-white">
             {{ thumbnail[0]["likes"] }}
           </div>
@@ -50,109 +49,109 @@
 import axios from "axios";
 import io from "socket.io-client";
 import { useAuthStore } from "../stores/store";
-
+import Navbar from "../components/navbar.vue";
 export default {
-  data() {
-    return {
-      user: "",
-      thumbnails: [],
-      socket: null,
-    };
-  },
-  methods: {
-    setupSocket() {
-      this.socket = io.connect("http://localhost:5000");
-      this.socket.on("update_views", (views) => {
-        this.views = views.views;
-      });
-      this.socket.on("update_likes", (views) => {
-        this.views = views.likes;
-      });
+    data() {
+        return {
+            user: "",
+            thumbnails: [],
+            socket: null,
+        };
     },
-    clickedVideo(id, title) {
-      axios
-        .post("/api/set_videod", {
-          id: id,
-          title: title,
-          i: 0,
-        })
-        .then((response) => {
-          this.$router.push("/playback");
-        })
-        .catch((error) => {
-          console.error(error);
-          alert("It ain't good");
-          this.$router.push("/home");
-        });
-    },
-    sortVids() {
-      let axiosRequests = [];
-      for (let thumbnail of this.thumbnails) {
-        axiosRequests.push(
-          axios
-            .get("/api/views/" + thumbnail[0].metadata.id)
-            .then((response) => {
-              thumbnail[0]["views"] = response.data.views;
-              thumbnail[0]["likes"] = response.data.likes;
+    methods: {
+        setupSocket() {
+            this.socket = io.connect("http://localhost:5000");
+            this.socket.on("update_views", (views) => {
+                this.views = views.views;
+            });
+            this.socket.on("update_likes", (views) => {
+                this.views = views.likes;
+            });
+        },
+        clickedVideo(id) {
+            axios
+                .post("/api/set_videod", {
+                id: id,
+                i: 0,
             })
-        );
-      }
-      Promise.all(axiosRequests)
-        .then(() => {
-          this.thumbnails.sort(function (a, b) {
-            if (parseInt(a[0]["views"]) < parseInt(b[0]["views"])) return 1;
-            if (parseInt(a[0]["views"]) > parseInt(b[0]["views"])) return -1;
-            return 0;
-          });
-          console.log(this.thumbnails);
-        })
-        .catch((error) => {
-          console.error("Error fetching views:", error);
-        });
+                .then((response) => {
+                this.$router.push("/playback");
+            })
+                .catch((error) => {
+                console.error(error);
+                alert("It ain't good");
+                this.$router.push("/home");
+            });
+        },
+        sortVids() {
+            let axiosRequests = [];
+            for (let thumbnail of this.thumbnails) {
+                axiosRequests.push(axios
+                    .get("/api/views/" + thumbnail[0].metadata.id)
+                    .then((response) => {
+                    thumbnail[0]["views"] = response.data.views;
+                    thumbnail[0]["likes"] = response.data.likes;
+                }));
+            }
+            Promise.all(axiosRequests)
+                .then(() => {
+                this.thumbnails.sort(function (a, b) {
+                    if (parseInt(a[0]["views"]) < parseInt(b[0]["views"]))
+                        return 1;
+                    if (parseInt(a[0]["views"]) > parseInt(b[0]["views"]))
+                        return -1;
+                    return 0;
+                });
+                console.log(this.thumbnails);
+            })
+                .catch((error) => {
+                console.error("Error fetching views:", error);
+            });
+        },
     },
-  },
-  mounted() {
-    setInterval(() => {
-      this.sortVids();
-    }, 5000);
-  },
-  beforeMount() {
-    axios
-      .get("/api/thumbnails")
-      .then((response) => {
-        this.thumbnails = response.data.thumbnails;
-        this.sortVids();
-      })
-      .catch((error) => {
-        console.error("Couldn't fetch thumbnails:", error);
-      });
-    this.setupSocket();
-  },
-  created() {
-    axios
-      .get("/api/fetch_username")
-      .then((response) => {
-        this.user = response.data.name;
-        console.log("user: ", response.data.name);
+    mounted() {
+        setInterval(() => {
+            this.sortVids();
+        }, 10000);
+    },
+    beforeMount() {
         axios
-          .post("/api/get_token", {
-            username: response.data.name,
-          })
-          .then((response) => {
-            const auth = useAuthStore();
-            auth.setToken(response.data.token);
-          })
-          .catch((error) => {
+            .get("/api/thumbnails")
+            .then((response) => {
+            this.thumbnails = response.data.thumbnails;
+            this.sortVids();
+        })
+            .catch((error) => {
+            console.error("Couldn't fetch thumbnails:", error);
+        });
+        this.setupSocket();
+    },
+    created() {
+        axios
+            .get("/api/fetch_username")
+            .then((response) => {
+            this.user = response.data.name;
+            console.log("user: ", response.data.name);
+            axios
+                .post("/api/get_token", {
+                username: response.data.name,
+            })
+                .then((response) => {
+                const auth = useAuthStore();
+                auth.setToken(response.data.token);
+            })
+                .catch((error) => {
+                console.error(error);
+                alert("Login again");
+                this.$router.push("/");
+            });
+        })
+            .catch((error) => {
             console.error(error);
             alert("Login again");
             this.$router.push("/");
-          });
-      })
-      .catch((error) => {
-        console.error(error);
-        alert("Login again");
-        this.$router.push("/");
-      });
-  },
+        });
+    },
+    components: { Navbar }
 };
 </script>

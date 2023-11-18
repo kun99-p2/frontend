@@ -1,4 +1,7 @@
 <template>
+  <nav class="z-20 top-0 left-0 border-b border-gray-800">
+    <Navbar/>
+  </nav>
   <div class="flex justify-center">
     <div class="flex flex-col items-start">
       <div class="flex items-center">
@@ -39,15 +42,59 @@
       </div>
     </div>
   </div>
-  <Comments/>
+  <div class="py-8">
+    <div class="max-w-2xl mx-auto px-4">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold text-white">Comments</h2>
+      </div>
+      <div class="mb-6">
+        <div
+          class="py-2 px-4 mb-4 bg-white rounded-lg rounded-t-lg border border-gray-200"
+        >
+          <label for="comment" class="sr-only">Your comment</label>
+          <textarea
+            v-model="comment"
+            rows="6"
+            class="px-0 w-full text-sm text-gray-900 border-0 focus:ring-0 focus:outline-none"
+            placeholder="Write a comment..."
+            required
+          ></textarea>
+        </div>
+        <button
+          @click="submitComment"
+          class="inline-flex items-center py-2.5 px-4 text-xs font-medium text-center text-white bg-gray-700 rounded-lg hover:bg-gray-800"
+        >
+          Post comment
+        </button>
+      </div>
+      <article
+        v-for="comment in comments"
+        :key="comment.id"
+        class="p-6 text-base rounded-lg bg-gray-900 mb-1"
+      >
+        <footer class="flex justify-between items-center mb-2">
+          <div class="flex items-center">
+            <p
+              class="inline-flex items-center mr-3 text-sm text-white font-semibold"
+            >
+              {{ comment.user }}
+            </p>
+          </div>
+        </footer>
+        <p class="text-gray-500 dark:text-gray-400">
+          {{ comment.comment }}
+        </p>
+      </article>
+    </div>
+  </div>
 </template>
 
 <script>
-import { useAuthStore } from "../stores/store.js";
+import { useAuthStore } from "../stores/store";
 import axios from "axios";
 import videojs from "video.js";
 import io from "socket.io-client";
-import Comments from "../components/Comments.vue";
+import Navbar from "../components/navbar.vue";
 export default {
     data() {
         return {
@@ -55,33 +102,29 @@ export default {
             user: "",
             video: "",
             videos: [],
+            comments: [],
             title: "",
             desc: "",
             views: "",
             likes: "",
             i: 0,
             m3u8: "",
+            comment: "",
             player: null,
             socket: null,
+            authenticated: false,
         };
     },
     methods: {
         setupSocket() {
-            this.socket = io.connect("http://localhost:5000");
-            this.socket.on("update_views", (views) => {
-                console.log(views);
-                this.views = views.views;
-            });
-            this.socket.on("update_likes", (likes) => {
-                this.likes = likes.likes;
-            });
+          this.socket = io.connect("http://localhost:5000");
+          this.socket.on("update_views", (views) => {
+            this.views = views.views;
+          });
+          this.socket.on("update_likes", (likes) => {
+            this.likes = likes.likes;
+          });
         },
-        // notifyWebSocketServer(views) {
-        //   this.socket.emit("update_views", views);
-        // },
-        // notifyWebSocketServerLikes() {
-        //   this.socket.emit("update_likes", this.likes);
-        // },
         clickedVideo(id, title) {
             axios
                 .post("/api/set_videod", {
@@ -114,7 +157,7 @@ export default {
             try {
                 axios.post("/api/increment/" + this.id).then((response) => {
                     this.views = response.data.views;
-                    //this.notifyWebSocketServer(this.views);
+                    console.log(this.views)
                 });
             }
             catch (error) {
@@ -125,7 +168,6 @@ export default {
             try {
                 axios.post("/api/like/" + this.id).then((response) => {
                     this.likes = response.data.likes;
-                    //this.notifyWebSocketServerLikes();
                 });
             }
             catch (error) {
@@ -135,6 +177,7 @@ export default {
         async getLikes() {
             const response = await axios.get("/api/views/" + this.id);
             this.likes = response.data.likes;
+            this.views = response.data.views;
         },
         initVideo() {
             this.player = videojs(this.$refs.videoPlayer, {
@@ -148,29 +191,47 @@ export default {
                 ],
             });
         },
+        getComments() {
+            axios.get("/api/get-comments/" + this.id).then((response) => {
+                console.log("Attempting to get commetns");
+                this.comments = response.data.comments;
+                console.log("Retrieved " + this.comments[0]);
+            });
+        },
+        submitComment() {
+            console.log(this.comment);
+            axios
+                .post("/api/add-comment", { video: this.id, comment: this.comment })
+                .then((response) => {
+                console.log(response.data.message);
+            });
+            this.comment = "";
+            this.getComments();
+        },
     },
     mounted() {
+        this.authenticated = useAuthStore().getAuthenticated();
         axios
             .get("/api/videod")
             .then((response) => {
-            this.user = response.data.user;
             this.id = response.data.id;
             this.title = response.data.title;
             this.i = response.data.i;
+            this.increaseViews();
             //m3u8
             axios
                 .post("/api/hls", {
-                user: this.user,
                 title: this.title,
+                id: this.id,
             })
                 .then((response) => {
                 console.log(response.data);
                 this.desc = response.data.metadata.desc;
                 this.m3u8 = response.data.m3u8;
                 this.setupSocket();
-                this.increaseViews();
                 this.getLikes();
                 this.initVideo();
+                this.getComments();
                 this.player.on("pause", () => {
                     this.$refs.videoPlayer.pause();
                 });
@@ -194,12 +255,18 @@ export default {
             .catch((error) => {
             console.error("Couldn't fetch videos:", error);
         });
+        setInterval(() => {
+            this.getComments();
+        }, 10000);
+        // setInterval(() => {
+        //     this.getLikes();
+        // }, 10000);
     },
     beforeDestroy() {
         if (this.player) {
             this.player.dispose();
         }
     },
-    components: { Comments }
+    components: { Navbar }
 };
 </script>
