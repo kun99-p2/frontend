@@ -1,6 +1,6 @@
 <template>
   <nav class="z-20 top-0 left-0 border-b border-gray-800">
-    <NavBar/>
+    <NavBar />
   </nav>
   <div class="flex justify-center">
     <div class="flex flex-col items-start">
@@ -96,177 +96,176 @@ import videojs from "video.js";
 import io from "socket.io-client";
 import NavBar from "../components/NavBar.vue";
 export default {
-    data() {
-        return {
-            id: "",
-            user: "",
-            video: "",
-            videos: [],
-            comments: [],
-            title: "",
-            desc: "",
-            views: "",
-            likes: "",
-            i: 0,
-            m3u8: "",
-            comment: "",
-            player: null,
-            socket: null,
-            authenticated: false,
-        };
-    },
-    methods: {
-        setupSocket() {
-          this.socket = io.connect("http://localhost:5000");
-          this.socket.on("update_views", (views) => {
-            this.views = views.views;
-          });
-          this.socket.on("update_likes", (likes) => {
-            this.likes = likes.likes;
-          });
-        },
-        clickedVideo(id, title) {
-            axios
-                .post("/api/set_videod", {
-                id: id,
-                title: title,
-                i: this.i,
-            })
-                .catch((error) => {
-                console.error(error);
-                alert("It ain't good");
-                this.$router.push("/home");
-            });
-            this.$router.go();
-        },
-        navigate(direction) {
-            if (direction === "right") {
-                if (this.i >= this.videos.length - 1) {
-                    this.i = 0;
-                }
-                else {
-                    this.i++;
-                }
-            }
-            else {
-                this.i = this.i > 0 ? this.i - 1 : this.videos.length - 1;
-            }
-            this.clickedVideo(this.videos[this.i][0].metadata.id, this.videos[this.i][0].metadata.title);
-        },
-        increaseViews() {
-            try {
-                axios.post("/api/increment/" + this.id).then((response) => {
-                    this.views = response.data.views;
-                    console.log(this.views)
-                });
-            }
-            catch (error) {
-                console.error("Couldn't increment views.");
-            }
-        },
-        increaseLikes() {
-            try {
-                axios.post("/api/like/" + this.id).then((response) => {
-                    this.likes = response.data.likes;
-                });
-            }
-            catch (error) {
-                console.error("Couldn't increment likes.");
-            }
-        },
-        async getLikes() {
-            const response = await axios.get("/api/views/" + this.id);
-            this.likes = response.data.likes;
-            this.views = response.data.views;
-        },
-        initVideo() {
-            this.player = videojs(this.$refs.videoPlayer, {
-                controls: true,
-                autoplay: true,
-                sources: [
-                    {
-                        src: this.m3u8,
-                        type: "application/x-mpegURL",
-                    },
-                ],
-            });
-        },
-        getComments() {
-            axios.get("/api/get-comments/" + this.id).then((response) => {
-                console.log("Attempting to get commetns");
-                this.comments = response.data.comments;
-                console.log("Retrieved " + this.comments[0]);
-            });
-        },
-        submitComment() {
-            console.log(this.comment);
-            axios
-                .post("/api/add-comment", { video: this.id, comment: this.comment })
-                .then((response) => {
-                console.log(response.data.message);
-            });
-            this.comment = "";
-            this.getComments();
-        },
-    },
-    mounted() {
-        this.authenticated = useAuthStore().getAuthenticated();
-        axios
-            .get("/api/videod")
-            .then((response) => {
-            this.id = response.data.id;
-            this.title = response.data.title;
-            this.i = response.data.i;
-            this.increaseViews();
-            //m3u8
-            axios
-                .post("/api/hls", {
-                title: this.title,
-                id: this.id,
-            })
-                .then((response) => {
-                console.log(response.data);
-                this.desc = response.data.metadata.desc;
-                this.m3u8 = response.data.m3u8;
-                this.setupSocket();
-                this.getLikes();
-                this.initVideo();
-                this.getComments();
-                this.player.on("pause", () => {
-                    this.$refs.videoPlayer.pause();
-                });
-                this.player.on("play", () => {
-                    this.$refs.videoPlayer.play();
-                });
-            })
-                .catch((error) => {
-                console.error("Couldn't fetch video:", error);
-            });
+  data() {
+    return {
+      id: "",
+      user: "",
+      video: "",
+      videos: [],
+      comments: [],
+      title: "",
+      desc: "",
+      views: "",
+      likes: "",
+      i: 0,
+      m3u8: "",
+      comment: "",
+      player: null,
+      socket: null,
+      authenticated: false,
+    };
+  },
+  methods: {
+    // setupSocket() {
+    //   this.socket = io.connect("http://localhost:5000");
+    //   this.socket.on("update_views", (views) => {
+    //     this.views = views.views;
+    //   });
+    //   this.socket.on("update_likes", (likes) => {
+    //     this.likes = likes.likes;
+    //   });
+    // },
+    clickedVideo(id, title) {
+      axios
+        .post("/api/set_videod", {
+          id: id,
+          title: title,
+          i: this.i,
         })
-            .catch((error) => {
-            console.error("Couldn't fetch videos:", error);
+        .catch((error) => {
+          console.error(error);
+          alert("It ain't good");
+          this.$router.push("/home");
         });
-        axios
-            .get("/api/videos")
-            .then((response) => {
-            this.videos = response.data.videos;
-            console.log(this.videos);
-        })
-            .catch((error) => {
-            console.error("Couldn't fetch videos:", error);
-        });
-        setInterval(() => {
-            this.getComments();
-        }, 10000);
-        // setInterval(() => {
-        //     this.getLikes();
-        // }, 10000);
+      this.$router.go();
     },
-    beforeDestroy() {
-        if (this.player) {
-            this.player.dispose();
+    navigate(direction) {
+      if (direction === "right") {
+        if (this.i >= this.videos.length - 1) {
+          this.i = 0;
+        } else {
+          this.i++;
         }
+      } else {
+        this.i = this.i > 0 ? this.i - 1 : this.videos.length - 1;
+      }
+      this.clickedVideo(
+        this.videos[this.i][0].metadata.id,
+        this.videos[this.i][0].metadata.title
+      );
     },
-    components: { NavBar }
+    increaseViews() {
+      try {
+        axios.post("/api/increment/" + this.id).then((response) => {
+          this.views = response.data.views;
+          console.log(this.views);
+        });
+      } catch (error) {
+        console.error("Couldn't increment views.");
+      }
+    },
+    increaseLikes() {
+      try {
+        axios.post("/api/like/" + this.id).then((response) => {
+          this.likes = response.data.likes;
+        });
+      } catch (error) {
+        console.error("Couldn't increment likes.");
+      }
+    },
+    async getLikes() {
+      const response = await axios.get("/api/views/" + this.id);
+      this.likes = response.data.likes;
+      this.views = response.data.views;
+    },
+    initVideo() {
+      this.player = videojs(this.$refs.videoPlayer, {
+        controls: true,
+        autoplay: true,
+        sources: [
+          {
+            src: this.m3u8,
+            type: "application/x-mpegURL",
+          },
+        ],
+      });
+    },
+    getComments() {
+      axios.get("/api/get-comments/" + this.id).then((response) => {
+        console.log("Attempting to get commetns");
+        this.comments = response.data.comments;
+        console.log("Retrieved " + this.comments[0]);
+      });
+    },
+    submitComment() {
+      console.log(this.comment);
+      axios
+        .post("/api/add-comment", { video: this.id, comment: this.comment })
+        .then((response) => {
+          console.log(response.data.message);
+        });
+      this.comment = "";
+      this.getComments();
+    },
+  },
+  mounted() {
+    this.authenticated = useAuthStore().getAuthenticated();
+    axios
+      .get("/api/videod")
+      .then((response) => {
+        this.id = response.data.id;
+        this.title = response.data.title;
+        this.i = response.data.i;
+        this.increaseViews();
+        //m3u8
+        axios
+          .post("/api/hls", {
+            title: this.title,
+            id: this.id,
+          })
+          .then((response) => {
+            console.log(response.data);
+            this.desc = response.data.metadata.desc;
+            this.m3u8 = response.data.m3u8;
+            //this.setupSocket();
+            this.getLikes();
+            this.initVideo();
+            this.getComments();
+            this.player.on("pause", () => {
+              this.$refs.videoPlayer.pause();
+            });
+            this.player.on("play", () => {
+              this.$refs.videoPlayer.play();
+            });
+          })
+          .catch((error) => {
+            console.error("Couldn't fetch video:", error);
+          });
+      })
+      .catch((error) => {
+        console.error("Couldn't fetch videos:", error);
+      });
+    axios
+      .get("/api/videos")
+      .then((response) => {
+        this.videos = response.data.videos;
+        console.log(this.videos);
+      })
+      .catch((error) => {
+        console.error("Couldn't fetch videos:", error);
+      });
+    setInterval(() => {
+      this.getComments();
+    }, 10000);
+    setInterval(() => {
+      this.getLikes();
+    }, 10000);
+  },
+  beforeDestroy() {
+    if (this.player) {
+      this.player.dispose();
+    }
+  },
+  components: { NavBar },
 };
 </script>

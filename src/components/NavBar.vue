@@ -93,7 +93,7 @@ export default {
   mounted() {
     this.notificationList = [];
     this.getNotifications();
-    this.setupSocket();
+    //this.setupSocket();
   },
   computed: {
     userStore() {
@@ -102,12 +102,12 @@ export default {
     },
   },
   methods: {
-    setupSocket() {
-      this.socket = io.connect("http://localhost:5000");
-      this.socket.on("update_notifications", (notifications) => {
-        this.notificationList = notifications.notifications;
-      });
-    },
+    // setupSocket() {
+    //   this.socket = io.connect("http://localhost:5000");
+    //   this.socket.on("update_notifications", (notifications) => {
+    //     this.notificationList = notifications.notifications;
+    //   });
+    // },
     getNotifications() {
       axios.get("/api/get-notifications").then((response) => {
         console.log(response.data.notifications);
