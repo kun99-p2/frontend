@@ -1,6 +1,6 @@
 <template>
   <nav class="z-20 top-0 left-0 border-b border-gray-800">
-    <Navbar/>
+    <NavBar/>
   </nav>
   <h1 style="display: flex; justify-content: center">Upload</h1>
   <div class="flex flex-col">
@@ -77,7 +77,7 @@
 <script>
 import axios from "axios";
 import { useAuthStore } from "../stores/store";
-import Navbar from "../components/navbar.vue";
+import NavBar from "../components/NavBar.vue";
 export default {
     data() {
         return {
@@ -209,6 +209,6 @@ export default {
             this.$router.push("/");
         });
     },
-    components: { Navbar }
+    components: { NavBar }
 };
 </script>

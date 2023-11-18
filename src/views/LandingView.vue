@@ -1,6 +1,6 @@
 <template>
   <nav class="z-20 top-0 left-0 border-b border-gray-800">
-    <Navbar/>
+    <NavBar/>
   </nav>
   <div class="relative mx-auto pt-20">
     <div
@@ -38,12 +38,12 @@
   </div>
 </template>
 <script>
-import Navbar from "../components/navbar.vue";
+import NavBar from "../components/NavBar.vue";
 import { useAuthStore } from "../stores/store.js";
 export default {
     created() {
         const auth = useAuthStore();
     },
-    components: { Navbar }
+    components: { NavBar }
 }
 </script>

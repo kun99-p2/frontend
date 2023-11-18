@@ -1,6 +1,6 @@
 <template>
   <nav class="z-20 top-0 left-0 border-b border-gray-800">
-    <Navbar/>
+    <NavBar/>
   </nav>
   <div class="w-full">
     <div class="m-6" v-for="thumbnail in thumbnails" :keys="thumbnail">
@@ -53,7 +53,7 @@
 </template>
 
 <script>
-import Navbar from "../components/navbar.vue";
+import NavBar from "../components/NavBar.vue";
 import { useAuthStore } from "../stores/store";
 import axios from "axios";
 export default {
@@ -146,6 +146,6 @@ export default {
             this.$router.push("/");
         });
     },
-    components: { Navbar }
+    components: { NavBar }
 };
 </script>

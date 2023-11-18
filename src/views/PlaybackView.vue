@@ -1,6 +1,6 @@
 <template>
   <nav class="z-20 top-0 left-0 border-b border-gray-800">
-    <Navbar/>
+    <NavBar/>
   </nav>
   <div class="flex justify-center">
     <div class="flex flex-col items-start">
@@ -94,7 +94,7 @@ import { useAuthStore } from "../stores/store";
 import axios from "axios";
 import videojs from "video.js";
 import io from "socket.io-client";
-import Navbar from "../components/navbar.vue";
+import NavBar from "../components/NavBar.vue";
 export default {
     data() {
         return {
@@ -267,6 +267,6 @@ export default {
             this.player.dispose();
         }
     },
-    components: { Navbar }
+    components: { NavBar }
 };
 </script>
